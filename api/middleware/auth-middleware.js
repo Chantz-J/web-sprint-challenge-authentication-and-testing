@@ -23,10 +23,27 @@ const checkPayload = (req, res, next) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        res.status(401).json({ message: 'username and password required' });
+        res.status(401).json({ message: 'username and password required' })
     } else {
-        next();
+        next()
     }
+}
+
+const checkUserInDb = async (req, res, next) => {
+    const { username } = req.body
+
+    await User.findBy({username: username})
+        .then(check => {
+            if (check.length) {
+                req.user = check[0]
+                next()
+            } else {
+                res.status(401).json('invalid credentials')
+            }
+        })
+        .catch(err => {
+            res.status(500).json(`Server error: ${err}`)
+        })
 }
 
 
